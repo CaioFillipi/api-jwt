@@ -3,6 +3,7 @@ package br.com.caio.jwt.service;
 import br.com.caio.jwt.model.Usuario;
 import br.com.caio.jwt.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,8 +15,8 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-   // @Autowired
-    //private PasswordEncoder encoder;
+    @Autowired
+    private PasswordEncoder encoder;
 
     public List<Usuario> getAllUsers(){
         return usuarioRepository.findAll();
@@ -29,8 +30,25 @@ public class UsuarioService {
         return null;
     }
 
+    public Usuario getUsuarioByLogin(String login){
+        Optional<Usuario> usuario = usuarioRepository.findUsuarioByLogin(login);
+        if(usuario.isPresent()){
+            return  usuario.get();
+        }
+        return null;
+    }
+
+    public boolean loginUser(String login,String password){
+        Usuario user = getUsuarioByLogin(login);
+        if(user != null){
+            boolean valid = encoder.matches(password,user.getPassword());
+            return valid;
+        }
+        return false;
+    }
+
     public Usuario createUser(Usuario usuario){
-      //  usuario.setPassword(encoder.encode(usuario.getPassword()));
+        usuario.setPassword(encoder.encode(usuario.getPassword()));
         return usuarioRepository.save(usuario);
     }
 
@@ -48,7 +66,7 @@ public class UsuarioService {
 
         if(updatedUser != null){
             updatedUser.setLogin(user.getLogin());
-            updatedUser.setPassword(user.getPassword());
+            updatedUser.setPassword(encoder.encode(user.getPassword()));
             updatedUser.setId(updatedUser.getId());
 
             updatedUser = createUser(updatedUser);

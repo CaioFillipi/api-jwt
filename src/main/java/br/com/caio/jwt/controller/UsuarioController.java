@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.websocket.server.PathParam;
 import java.net.URI;
 import java.util.List;
 
@@ -30,6 +31,27 @@ public class UsuarioController {
             return ResponseEntity.ok(user);
         }
         return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping(value = "/login/{login}")
+    public ResponseEntity<Usuario> findUsuarioByLogin(@PathVariable String login){
+        Usuario user = usuarioService.getUsuarioByLogin(login);
+
+        if(user != null){
+            return ResponseEntity.ok(user);
+        }
+        return new ResponseEntity(HttpStatus.NOT_FOUND);
+    }
+
+    @GetMapping(value = "/login")
+    public ResponseEntity<Boolean> login(@RequestParam String login,@RequestParam String password){
+        boolean status = usuarioService.loginUser(login,password);
+
+        if(status){
+            return ResponseEntity.status(HttpStatus.ACCEPTED).body(status);
+        }
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
     }
 
     @PostMapping
